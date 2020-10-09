@@ -1,0 +1,20 @@
+description "Testing Step5Archive\377";
+
+uses
+	Core,
+	plugin/gtest,
+	plugin/gmock,
+	Step5Archive;
+
+file
+	Init readonly separator,
+	Test.h,
+	Test.brc,
+	CodecTest.cpp,
+	Main.cpp,
+	Tests readonly separator,
+	oldtests.cpp;
+
+mainconfig
+	"" = "";
+
