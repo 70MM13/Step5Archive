@@ -1,0 +1,10 @@
+description "Handling STEP 5 archives\377";
+
+uses
+	Core;
+
+file
+	Step5Archive.h,
+	archive.cpp,
+	codec.cpp;
+
