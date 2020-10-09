@@ -7,7 +7,7 @@ The archive is a file which is produced by the Siemens STEP 5 (v7.x?) software p
 
 The file extension is .ACS - normally the filename is "\<S5PROJ\>PX.ACS", where \<S5PROJ\> is the cryptic STEP 5 project name with only 6 characters in length.
 
-A standard archive has the full pathname stored and STEP 5 extracts to these full pathnames when dearchiving. (With the s5dearch tool you can specify another destination). The files are either stored or compressed with the "Sixpack" compression algorithm. This seems to be a bit obscure compression scheme, known as "SIXPACK.C" by Philip G. Gage. Original files in this repo (see resources) are extracted from [DDJCOMPR.ZIP](https://www.sac.sk/download/pack/ddjcompr.zip).
+A standard archive has the full pathname stored and STEP 5 extracts to these full pathnames when dearchiving. (With the s5dearch tool you can specify another destination). The files are either stored or compressed with the "Sixpack" compression algorithm. This seems to be a bit obscure compression scheme, known as "SIXPACK.C" by Philip G. Gage. [Original files](resources/sixpack) in this repo are extracted from [DDJCOMPR.ZIP](https://www.sac.sk/download/pack/ddjcompr.zip).
 
 ### Structure of archive
 
