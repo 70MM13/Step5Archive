@@ -1,0 +1,283 @@
+
+Philip G. Gage
+5345 El Camino Drive
+Colorado Springs, CO 80918
+
+Home: 719-593-1801
+Work: 719-570-8089
+CIS:  70541,3645
+
+
+
+                                INTRODUCTION
+
+The Sixpack program is a file compression utility using a string copy
+
+algorithm and adaptive Huffman encoding.  The program was written
+
+specifically for the Data Compression contest announced in the February 1991
+
+issue of Dr. Dobb's Journal, based on earlier compression programs that I
+
+have developed over the past few years.  The goal was to achieve maximum
+
+compression on a 640K PC, even if it ran slowly. 
+
+
+The main disadvantage is slow compression time, since the algorithm
+
+repeatedly searches the last few thousand bytes looking for the longest
+
+string that matches the current text.  Decompression is faster, involving no
+
+text searching.  The compression speed can be adjusted somewhat by changing
+
+the search parameters. 
+
+
+The whimsical name Sixpack was chosen because the program combines six
+
+algorithms into a single data packing method.  The algorithms illustrate a
+
+variety of data structures, including a binary tree, a hash table, doubly
+
+linked lists and a circular array.  I must admit that integrating all these
+
+concepts into a working program was quite educational.  A brief description
+
+of each algorithm follows. 
+
+
+
+
+                         FINITE WINDOW COMPRESSION
+
+The basic idea is to maintain a "finite window" buffer of the most recent
+
+few thousand characters and search this buffer for the longest string
+
+matching the current text.  If such a string is found and it meets or
+
+exceeds a minimum length, then compression can be achieved by encoding the
+
+matching section of the current text as the number of characters to copy and
+
+the distance from which to copy them.  If no matching string of the minimum
+
+length or longer is found, the current character is output as a literal
+
+without compression and the algorithm proceeds to the next input character. 
+
+
+This finite window scheme generates two types of codes, single literal
+
+characters, and string copies consisting of length and distance values.  To
+
+avoid useless copy length/distance pairs, the distance is measured from the
+
+last character of the string to be copied instead of the first character. 
+
+Several distance formats with a different number of bits are used to
+
+minimize the distance code size.  Another enhancement is not to issue a copy
+
+if a better copy exists at the next character.  A final improvement is to
+
+check for an alphabetized dictionary word file and restrict copies to
+
+roughly a one word distance on such files for greater compression. 
+
+
+This algorithm is more similar to the original Lempel-Ziv approach than to
+
+the later LZW implementation, and resembles methods described in "Data
+
+Compression with Finite Windows", Communications of the ACM, April 1989. 
+
+The original Lempel-Ziv idea combines each copy with a literal character,
+
+while the ACM article uses blocks of literal characters.  The well known
+
+LHARC/ICE program uses a similar method to achieve impressive results. 
+
+
+
+
+                           CIRCULAR BUFFER ARRAY
+
+The first problem is how to store the buffer of recent text.  To maintain a
+
+queue using a linked list would complicate searching.  Shifting the entire
+
+contents of an array to add a new character would be too slow. 
+
+
+The buffering technique used in Sixpack is to store the text in a circular
+
+array which wraps around on itself.  When the end of the array is reached,
+
+the position is reset to the beginning of the array and old text is
+
+overwritten. No additional data structures are needed and the array occupies
+
+minimum space. 
+
+
+Since character positions are fixed during their lifetime in the array, the
+
+linked lists described later can be allocated in parallel with the buffer
+
+array, using the character positions as the corresponding linked list node
+
+numbers. The disadvantage of this method is that all operations involving
+
+text strings in the buffer must account for the wrap at the end of the
+
+buffer.
+
+
+
+
+                                 HASH TABLE
+
+The fundamental problem is finding the longest string match in a large block
+
+of text.  A brute force search gives very slow performance.  Several search
+
+algorithms were tested, including a binary search tree, a direct lookup
+
+table and fast text search techniques.  For this application, the best
+
+method seemed to be a hash table where the key is derived from the first few
+
+characters at each location in the buffer. 
+
+
+Each entry in the hash table is a doubly linked list containing the indices
+
+of all buffer positions with matching text.  Each list requires both a head
+
+and tail pointer.  Since several string prefixes may generate the same hash
+
+key, some collisions may occur and the entire string must be checked during
+
+a search. 
+
+
+
+
+                            DOUBLY LINKED LISTS
+
+Linked lists are efficient for storing string prefixes in the hash table,
+
+since the prefixes are continually being deleted when they reach the maximum
+
+search distance and many duplicate keys may exist in some lists.  Hash table
+
+chaining techniques would be awkward in this situation. 
+
+
+Both successor and predecessor pointers must be kept for a doubly linked
+
+list. New nodes are added at the head of the list and old nodes are deleted
+
+at the tail of the list.  A singly linked list would result in slow delete
+
+times, since the entire list must be scanned to find the last node. 
+
+Searching begins at the head of the list, keeping track of the best matching
+
+string seen so far.  This method has the advantage that the most recent
+
+string match is always found, resulting in shorter distance copies that can
+
+be encoded in fewer bits.  No actual information needs to be stored in the
+
+lists, because the node pointers also indicate the character positions in
+
+the buffer. 
+
+
+
+
+                          ADAPTIVE HUFFMAN CODING
+
+As a final compression stage, each literal character and copy length code is
+
+passed through an adaptive frequency filter which squeezes frequently
+
+occurring characters into short bit strings.  The possible copy length codes
+
+for each distance range are added to the end of the normal character set. 
+
+The copy distance values are likely to be more random and not susceptible to
+
+frequency encoding, so they are output using fixed length bit strings. 
+
+
+A binary prefix code tree which approximates the famous Huffman tree is
+
+maintained by counting each character and propagating the count upward
+
+through the tree.  During this propagation the frequency of each node is
+
+calculated as the sum of the frequencies of both children.  The new
+
+frequency of each traversed node is then compared to that of the node that
+
+is up two levels and down one.  If the higher frequency is lower in the
+
+tree, the two nodes are swapped.  To avoid overflow and provide local
+
+adaption to changing data, the frequencies are periodically scaled down by a
+
+factor of two. 
+
+
+The data structures and compress/uncompress routines are derived from Pascal
+
+versions presented in "Application of Splay Trees to Data Compression",
+
+Communications of the ACM, August 1988.  I have replaced the original
+
+semi-splaying by frequency coding, giving better results for this
+
+application but running slower. 
+
+
+
+
+                                BIT PACKING
+
+The final topic to be covered is packing and unpacking of variable length
+
+bit strings.  Several different sizes of codes are used for copy distance
+
+values, while the adaptive Huffman algorithm processes individual bits. 
+
+Routines to handle single bits and multibit codes are used in the program. 
+
+A flush routine writes any buffered bits to the output file before it is
+
+closed.
+
+
+
+
+                                  SUMMARY
+
+In summary, the Sixpack program provides very good compression with low
+
+memory usage, about 200K for compression and 50K for decompression.  The
+
+code is fairly simple and generates an executable file only 14K in size.  It
+
+uses a one pass method suitable for large files and redirected data streams.
+
+The main disadvantage is slow compression speed, making it more suitable for
+
+archive distribution than for routine backups.  There is much room for
+
+performance improvement, making this a potentially useful method. 
+
+
