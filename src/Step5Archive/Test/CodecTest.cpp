@@ -146,7 +146,7 @@ TEST_F(CodecTest, RandomWithDuplicates)
 TEST_F(CodecTest, RandomAsciiWithDuplicates)
 {
 	LOG("CodecTest.RandomAsciiWithDuplicates");
-	DoTestRun(2500, [](int p)->String { return RandomStringAscii(p); }, true);
+	DoTestRun(25000000, [](int p)->String { return RandomStringAscii(p); }, true);
 }
 
 

@@ -1,5 +1,7 @@
 #include "Step5Archive.h"
 
+using namespace Upp;
+
 /* inspired by SIXPACK.C by Philip G. Gage*/
 
 #define TEXTSEARCH 1000   /* Max strings to search in text file */

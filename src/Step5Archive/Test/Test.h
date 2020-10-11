@@ -4,7 +4,7 @@
 #include <Core/Core.h>
 #include <plugin/gmock/gmock.h>
 
-#include "../Step5Archive.h"
+#include <Step5Archive/Step5Archive.h>
 
 #include "Test.brc"
 

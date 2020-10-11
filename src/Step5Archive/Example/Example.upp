@@ -1,0 +1,15 @@
+description "Example program to extract STEP 5 archive\377";
+
+uses
+	Core,
+	Step5Archive;
+
+file
+	Example.h,
+	Main.cpp,
+	Pack.cpp,
+	Unpack.cpp;
+
+mainconfig
+	"" = "";
+
