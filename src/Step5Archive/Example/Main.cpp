@@ -102,9 +102,10 @@ CONSOLE_APP_MAIN
 			if (HasWildcards(destination)) ExitError(2, "No wildcards allowed in [destination]");
 		}
 		else {
-			destination = GetCurrentDirectory();
+			if (mode == pack) destination = GetCurrentDirectory();
+			else destination = "";
 		}
-		if (DirectoryExists(destination)) {
+		if ((destination != "") && DirectoryExists(destination)) {
 			if (destination.Last() != DirSeparator()) {
 				destination += DirSeparator();
 			}
