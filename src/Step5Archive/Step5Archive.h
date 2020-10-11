@@ -4,14 +4,11 @@
 #include <Core/Core.h>
 
 extern int codec_error;
+int EncodeStream (Upp::Stream &in, Upp::Stream &out);
+int DecodeStream (Upp::Stream &in, Upp::Stream &out);
 
 
 namespace Upp {
-
-int EncodeStream (Stream &in, Stream &out);
-int DecodeStream (Stream &in, Stream &out);
-
-
 
 enum FILE_ATTRIBUTE {
 	READONLY            = 0x00000001,

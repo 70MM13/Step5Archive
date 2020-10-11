@@ -34,11 +34,12 @@ unsigned char *buffer;            /* Text buffer */
 /* Adaptive Huffman variables */
 #define TERMINATE 256             /* EOF code */
 #define FIRSTCODE 257             /* First code for copy lengths */
-#define MAXCHAR (FIRSTCODE+COPYRANGES*CODESPERRANGE-1)
-#define SUCCMAX (MAXCHAR+1)
-#define TWICEMAX (2*MAXCHAR+1)
+// MAXCHAR is in winnt.h
+#define MAX_CHAR (FIRSTCODE+COPYRANGES*CODESPERRANGE-1)
+#define SUCCMAX (MAX_CHAR+1)
+#define TWICEMAX (2*MAX_CHAR+1)
 #define ROOT 1
-short left[MAXCHAR+1], right[MAXCHAR+1];  /* Huffman tree */
+short left[MAX_CHAR+1], right[MAX_CHAR+1];  /* Huffman tree */
 short up[TWICEMAX+1], freq[TWICEMAX+1];
 
 /*** Bit packing routines ***/
@@ -100,23 +101,23 @@ void AllocateMemoryForCompression()
 	pred_allocated = 0;
 	buffer_allocated = 0;
 
-	head = new(std::nothrow) short[HASHSIZE];
+	head = new short[HASHSIZE];
 	if (head != 0)
 	{
 		head_allocated = -1;
-		tail = new(std::nothrow) short[HASHSIZE];
+		tail = new short[HASHSIZE];
 		if (tail != 0)
 		{
 			tail_allocated = -1;
-			succ = new(std::nothrow) short[maxsize];
+			succ = new short[maxsize];
 			if (succ != 0)
 			{
 				succ_allocated = -1;
-				pred = new(std::nothrow) short[maxsize];
+				pred = new short[maxsize];
 				if (pred != 0)
 				{
 					pred_allocated = -1;
-					buffer = new(std::nothrow) unsigned char[maxsize];
+					buffer = new unsigned char[maxsize];
 					if (buffer != 0) {
 						memset(buffer, NIL, sizeof(unsigned char)*maxsize); // made Valgrind happy
 						buffer_allocated = -1;
@@ -145,7 +146,7 @@ void AllocateMemoryForDecompression()
 	pred_allocated = 0;
 	buffer_allocated = 0;
 	
-	buffer = new(std::nothrow) unsigned char[maxsize];
+	buffer = new unsigned char[maxsize];
 	if (buffer != 0)
 		buffer_allocated = -1;
 	else
@@ -271,7 +272,7 @@ void initialize()
 		freq[i] = 1;
 	}
 
-	for (i = 1; i<=MAXCHAR; ++i)
+	for (i = 1; i<=MAX_CHAR; ++i)
 	{
 		left[i] = 2*i;
 		right[i] = 2*i+1;
@@ -390,7 +391,7 @@ int16 uncompress()
 	{
 		if (input_bit()) c = right[c];
 		else c = left[c];
-	} while (c <= MAXCHAR); //0x0274 (T + 1) c < T
+	} while (c <= MAX_CHAR); //0x0274 (T + 1) c < T
 	
 	c -= SUCCMAX;
 //	LOG(Format("DecodeChar(%i '%c')%s\x1f", c, c, c>0x100?"                      ***":""));
