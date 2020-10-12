@@ -72,8 +72,6 @@ CONSOLE_APP_MAIN
 	
 	String source="", destination="";
 	
-//try {
-	
 	Banner();
 	
 	const Vector<String>& cmdline = CommandLine();

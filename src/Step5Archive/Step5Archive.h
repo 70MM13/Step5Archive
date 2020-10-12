@@ -35,7 +35,6 @@ enum FILE_ATTRIBUTE {
 class Step5Archive
 {
 	
-	static const int sizeof_header = 54;
 	struct Header {
 		char id[6] = "STEP5"; //0-terminated
 		// 1 bytes '\0'
@@ -43,8 +42,8 @@ class Step5Archive
 		uint32 asize;
 		//reserved 41 bytes
 	};
+	static const int sizeof_header = 54;
 	
-	static const int sizeof_filerecord = 287;
 	struct File : Moveable<File> {
 		char path[260];
 		uint16 date;
@@ -56,6 +55,7 @@ class Step5Archive
 		//8 bytes reserved
 		uint32 offset;
 	};
+	static const int sizeof_filerecord = 287;
 	
 	Stream *archive;
 	bool         error;
