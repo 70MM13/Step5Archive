@@ -7,6 +7,12 @@
 
 using namespace Upp;
 
+typedef enum ARCHOPTS {
+	none     = 0x00000000,
+	list,
+	test
+} ArchOpts;
+
 typedef enum CONFIRM {
 	cancel = -1,
 	no = 0,
@@ -14,10 +20,11 @@ typedef enum CONFIRM {
 } Confirmation;
 
 Confirmation AskConfirmation(String question);
+void ExitError(int err, String text);
 
 String ReplaceSuffix (String filename, String new_suffix);
 
-void Pack (String source, String Destination);
-void Unpack (String source, String Destination);
+void Pack (String source, String Destination, ArchOpts opts=none);
+void Unpack (String source, String Destination, ArchOpts opts=none);
 
 #endif

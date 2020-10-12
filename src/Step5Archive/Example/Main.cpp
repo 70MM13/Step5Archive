@@ -31,8 +31,9 @@ void Help()
 	)t";
 }
 
-void ExitError(int erno, String text) {
+void ExitError(int err, String text) {
 	Cout() << GetFileName(GetExeFilePath()) << ": " << "Error: " << text << "\n";
+	Exit(err);
 }
 
 Confirmation AskConfirmation (String question)
@@ -65,63 +66,89 @@ CONSOLE_APP_MAIN
 		unpack
 	} Mode;
 	
+	ArchOpts opts=none;
 	Mode mode=unset;
 	bool custom_archive_extension = false;
 	
-	String source, destination;
+	String source="", destination="";
 	
+//try {
 	
 	Banner();
 	
 	const Vector<String>& cmdline = CommandLine();
 	for(int i = 0; i < cmdline.GetCount(); i++) {
-		if ( (cmdline[i] == "/?") | (cmdline[i] == "/h") | (cmdline[i] == "--help") ) {
+		if ( (cmdline[i] == "/?") | (cmdline[i] == "-h") ) {
 			Help();
 			Exit(0);
 		}
 	}
-	if (mode == unset) {
-		if (cmdline.GetCount() >= 1) {
-			source = NormalizePath(cmdline[0]);
-			if (source.EndsWith("PX.INI")) {
-				if (HasWildcards(source)) ExitError(1, "No wildcards allowed in project name");
-				if (!FileExists(source)) ExitError(1, Format("File not found \"%s\"", source));
-				mode = pack;
-			}
-			else {
-				if (custom_archive_extension || source.EndsWith(".ACS")) {
-					mode = unpack;
-				}
-				else {
-					ExitError(1, Format("Don't know how to handle \"%s\"", source));
-				}
-			}
+
+	int iSrc=0, iDst=0;
+	if (cmdline.GetCount() >= 2) {
+		if (cmdline[0].StartsWith("-")) {
+			if      (cmdline[0] == "-e") { mode = unpack; }
+			else if (cmdline[0]	== "-p") { mode = pack; }
+			else if (cmdline[0] == "-l") { mode = unpack; opts = ArchOpts::list; }
+			else if (cmdline[0] == "-t") { mode = unpack; opts = ArchOpts::test; }
+			else ExitError(1, Format("Unknown option: %s", cmdline[0]));
+			
+			iSrc=1;
+			iDst=2;
 		}
-		if (cmdline.GetCount() >= 2) {
-			destination = NormalizePath(cmdline[1]);
-			if (HasWildcards(destination)) ExitError(2, "No wildcards allowed in [destination]");
+	}
+	if (	(mode==unset) && ( (cmdline.GetCount() < 1) || (cmdline.GetCount() > 2) )
+		||	(mode!=unset) && ( (cmdline.GetCount() < 2) || (cmdline.GetCount() > 3) ) )
+	{
+		ExitError(1, "Error: invalid number of parameters -- use /? or -h for help");
+	}
+		
+	source = NormalizePath(cmdline.Get(iSrc, ""));
+	destination = cmdline.Get(iDst, "");
+	
+	if (HasWildcards(source) || HasWildcards(destination)) {
+		ExitError(1, "Error: No wildcards allowed");
+	}
+	if (!FileExists(source)) {
+		ExitError(1, Format("File not found \"%s\"", source));
+	}
+	
+	// no mode given -- autodetect source
+	if (mode == unset) {
+		if (source.EndsWith("PX.INI")) {
+			mode = pack;
+		}
+		else if (source.EndsWith(".ACS")) {
+			mode = unpack;
 		}
 		else {
-			if (mode == pack) destination = GetCurrentDirectory();
-			else destination = "";
+			ExitError(1, Format("Error: Don't know how to handle \"%s\"", source));
 		}
-		if ((destination != "") && DirectoryExists(destination)) {
+	}
+	// (packing) no destination given -- set to current directory
+	if( (mode == pack) && (destination=="") ) {
+		destination=GetCurrentDirectory();
+	}
+	// when destination is existing directory, make sure it ends with '/' or '\\'
+	if (destination != "") {
+		if (DirectoryExists(destination)) {
 			if (destination.Last() != DirSeparator()) {
 				destination += DirSeparator();
 			}
 		}
-		if ((mode == pack) && GetFileName(destination) == "") {
-			destination << ReplaceSuffix(GetFileName(source), "PX.ACS");
-		}
-
-
-		
-		if (mode == pack) Pack(source, destination);
-		else if (mode == unpack) Unpack(source, destination);
 		else {
-			ExitError(3, "Nothing to do -- use /? or -h for help");
+			if (mode == unpack) ExitError(1, Format("Error: Destination directory does not exist (%s)", destination));
 		}
 	}
-
+	// (packing) no filename given -- construct from project filename
+	if ((mode == pack) && GetFileName(destination) == "") {
+		destination << ReplaceSuffix(GetFileName(source), "PX.ACS");
+	}
+		
+	if (mode == pack) Pack(source, destination, opts);
+	else if (mode == unpack) Unpack(source, destination, opts);
+	else {
+		ExitError(3, "Nothing to do -- use /? or -h for help");
+	}
 
 }

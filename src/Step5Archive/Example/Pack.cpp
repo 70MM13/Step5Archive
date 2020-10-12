@@ -12,7 +12,7 @@ String ReplaceSuffix (String filename, String new_suffix)
 }
 
 
-void Pack(String source, String destination)
+void Pack(String source, String destination, ArchOpts opts)
 {
 	Vector <String> filenames;
 	TextSettings px_ini;
@@ -24,6 +24,8 @@ void Pack(String source, String destination)
 
 	filenames.Add(source);
 
+	/* TODO: check validity of project file */
+	
 	px_ini.Load(source);
 	for(i=0; i<=9; i++) {
 		switch (i) {

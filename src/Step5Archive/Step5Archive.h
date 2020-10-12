@@ -4,8 +4,10 @@
 #include <Core/Core.h>
 
 extern int codec_error;
-int EncodeStream (Upp::Stream &in, Upp::Stream &out);
-int DecodeStream (Upp::Stream &in, Upp::Stream &out);
+int EncodeStream (Upp::Stream &in, Upp::Stream &out, int size_in=INT_MAX);
+//int EncodeStream (Upp::Stream &in, Upp::Stream &out);
+int DecodeStream (Upp::Stream &in, Upp::Stream &out, int size_in=INT_MAX, int size_out=INT_MAX);
+//int DecodeStream (Upp::Stream &in, Upp::Stream &out);
 
 
 namespace Upp {

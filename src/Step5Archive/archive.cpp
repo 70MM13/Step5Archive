@@ -45,6 +45,7 @@ void Step5Archive::ReadDir()
 		return;
 	}
 	
+	// setting start of data block (end of header+directory)
 	offset = sizeof_header + (header.nfiles * sizeof_filerecord);
 	if (archive->GetSize() < offset) {
 		LLOG("Error: can't read records (file too small)");
@@ -87,6 +88,7 @@ void Step5Archive::ReadDir()
 		return;
 	}
 	
+	//ok seems a valid file
 	error = false;
 }
 
@@ -104,8 +106,39 @@ Time Step5Archive::GetDosDateTime(word dosdate, word dostime)
 
 bool Step5Archive::ReadFile(Stream& out, Gate<int, int> progress)
 {
-	/* TODO */
-	return false;
+	if(error)
+		return false;
+	if(IsFolder()) {
+		current++;
+		return true;
+	}
+	error = true;
+	if(current >= files.GetCount())
+		return false;
+	const File& f = files[current];
+	
+	archive->Seek(offset+f.offset);
+	
+	int r = 0;
+	if (f.compr ==0) {			/* stored */
+		r = CopyStream(out, *archive, f.csize, AsGate64(progress));
+	}
+	else if (f.compr == 1) {	/* compressed */
+		int d = out.GetSize();
+		DecodeStream(*archive, out, f.csize);
+		r = out.GetSize() -d;
+	}
+	else {
+		LLOG(Format("Unknown compression type (%i) on file %i (%s)", (int)f.compr, current, f.path));
+		return false;
+	}
+	if (r != f.usize) {
+		LLOG(Format("Size mismatch restoring file - got %i bytes (expecting %i)", r, (int)f.usize));
+		return false;
+	}
+	
+	error = false;
+	return true;
 }
 
 String Step5Archive::ReadFile(Gate<int, int> progress)

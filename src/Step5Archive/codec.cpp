@@ -700,7 +700,7 @@ END:
 
 
 
-int EncodeStream(Stream &in, int size_in, Stream &out)
+int EncodeStream(Stream &in, Stream &out, int size_in)
 {
 	codec_error = 0;
 	size_src = size_in + in.GetPos();
@@ -716,13 +716,7 @@ int EncodeStream(Stream &in, int size_in, Stream &out)
 	return codec_error;
 }
 
-int EncodeStream (Stream &in, Stream &out) {
-	return EncodeStream(in, INT_MAX, out);
-};
-
-
-
-int DecodeStream(Stream &in, int size_in, Stream &out, int size_out)
+int DecodeStream(Stream &in, Stream &out, int size_in, int size_out)
 {
 	codec_error = 0;
 	size_src = size_in + in.GetPos();
@@ -738,8 +732,3 @@ int DecodeStream(Stream &in, int size_in, Stream &out, int size_out)
 	streambuf_dst = 0;
 	return codec_error;
 }
-
-int DecodeStream (Stream &in, Stream &out) {
-	return DecodeStream (in, INT_MAX, out, INT_MAX);
-};
-
