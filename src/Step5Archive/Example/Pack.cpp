@@ -19,8 +19,8 @@ void Pack(String source, String destination)
 	int i;
 	String fn;
 	
-	Cout() << "Packing project files from: \"" << source << "\"\n";
-	Cout() << "                to archive: \"" << destination << "\"\n";
+	Cout() << "Project: " << source << "\n";
+	Cout() << "Archive: " << destination << "\n";
 
 	filenames.Add(source);
 
@@ -72,7 +72,7 @@ void Pack(String source, String destination)
 	}
 	
 	for(i=0; i<filenames.GetCount(); i++) {
-		Cout() << i << " \"" << filenames[i] << "\"\n";
+		Cout() << i << " " << filenames[i] << "\n";
 	}
 }
 
