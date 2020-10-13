@@ -34,28 +34,31 @@ enum FILE_ATTRIBUTE {
 	
 class Step5Archive
 {
-	
+protected:
+	static const int sizeof_header = 54;
+	static const int sizeof_filerecord = 287;
+	static const int sizeof_path = 260;
+
 	struct Header {
 		char id[6] = "STEP5"; //0-terminated
 		// 1 bytes '\0'
-		uint16 nfiles;
-		uint32 asize;
+		uint16 nfiles =0;
+		uint32 asize =0;
 		//reserved 41 bytes
 	};
-	static const int sizeof_header = 54;
 	
 	struct File : Moveable<File> {
-		char path[260];
-		uint16 date;
-		uint16 time;
-		uint16 attr;
-		uint8 compr;
-		uint32 usize;
-		uint32 csize;
+		char path[sizeof_path] = "";
+		uint16 date = 0;
+		uint16 time = 0;
+		uint16 attr = 0;
+		uint8 compr = 0;
+		uint32 usize = 0;
+		uint32 csize = 0;
 		//8 bytes reserved
-		uint32 offset;
+		uint32 offset = 0;
 	};
-	static const int sizeof_filerecord = 287;
+	
 	
 	Stream *archive;
 	bool         error;
@@ -107,9 +110,32 @@ public:
 
 	Step5Archive(Stream& in);
 	Step5Archive();
-	~Step5Archive();
 };
 
+
+class WriteStep5Archive : protected Step5Archive
+{
+	bool processing;
+	
+	void UpdateHeader();
+	void UpdateFileRecord();
+	void InsertFileRecord();
+	
+	static word GetDosDate(Time time);
+	static word GetDosTime(Time time);
+
+public:
+	using Step5Archive::IsError;
+	using Step5Archive::GetCLength;
+	
+	bool   IsFileOpened()          { return processing; }
+	void   WriteFile(Stream& in, String path, Time tm = GetSysTime(), dword attr=0, bool compressed = true);
+	
+	void   Create(Stream& out);
+
+	WriteStep5Archive(Stream& out);
+	WriteStep5Archive();
+};
 
 }
 #endif

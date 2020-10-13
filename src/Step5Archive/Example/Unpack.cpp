@@ -80,6 +80,8 @@ void Unpack(String source, String destination, ArchOpts opts)
 		if (archive.IsError()) {
 			ExitError(20, "Writing outstream");
 		}
+		
+		/* TODO: write time and attributes */
 		else Cout() <<" Ok. \n";
 		
 	}

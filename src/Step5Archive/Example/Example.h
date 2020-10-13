@@ -10,7 +10,8 @@ using namespace Upp;
 typedef enum ARCHOPTS {
 	none     = 0x00000000,
 	list,
-	test
+	test,
+	csmall
 } ArchOpts;
 
 typedef enum CONFIRM {

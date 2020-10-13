@@ -15,20 +15,28 @@ void Banner() {
 
 void Help()
 {
-	Cout() << "Usage: " << GetFileName(GetExeFilePath()) << " <source> [destination] \n\n";
+	Cout() << "Usage: " << GetFileName(GetExeFilePath()) << " [-command] <source> [destination] \n\n";
 	Cout() << R"t(where:
-  * Options when archiving:
-           <source> : ??????PX.INI - compress project files to archive
-      [destination] : optional - path to new archive
-                      when omitted, creates archive in current directory
-                      without filename, uses the project name
+  commands:
+           -e   : Extract files from archive
+           -p   : Create archive from project files
+           -ps  : as `-p' but also compresses small files
+           -l   : List files in archive
+           -t   : Test archive
+		
+  filenames when packing:
+       <source> : ??????PX.INI - compress project files to archive
+      [destin.] : optional - path to new archive
+                  when omitted, creates archive in current directory
+                  without filename, uses the project name
+ 
+  filenames when unpacking:
+       <source> : ??????PX.ACS - extract files from archive
+      [destin.] : optional - path to extract file to
+                  when omitted, the full pathnames in the archive are used
 
-  * Options when dearchiving:
-           <source> : ??????PX.ACS - extract files from archive\n
-      [destination] : optional - path to extract file to
-                      when omitted, the full pathnames in the archive are used
+)t";
 
-	)t";
 }
 
 void ExitError(int err, String text) {
@@ -38,7 +46,6 @@ void ExitError(int err, String text) {
 
 Confirmation AskConfirmation (String question)
 {
-	int retval;
 	String s;
 	
 	for (;;) {
@@ -68,7 +75,6 @@ CONSOLE_APP_MAIN
 	
 	ArchOpts opts=none;
 	Mode mode=unset;
-	bool custom_archive_extension = false;
 	
 	String source="", destination="";
 	
@@ -82,13 +88,15 @@ CONSOLE_APP_MAIN
 		}
 	}
 
-	int iSrc=0, iDst=0;
+	int iSrc=0;
+	int iDst=1;
 	if (cmdline.GetCount() >= 2) {
 		if (cmdline[0].StartsWith("-")) {
-			if      (cmdline[0] == "-e") { mode = unpack; }
-			else if (cmdline[0]	== "-p") { mode = pack; }
-			else if (cmdline[0] == "-l") { mode = unpack; opts = ArchOpts::list; }
-			else if (cmdline[0] == "-t") { mode = unpack; opts = ArchOpts::test; }
+			if      (cmdline[0] == "-e")  { mode = unpack; }
+			else if (cmdline[0]	== "-p")  { mode = pack; }
+			else if (cmdline[0]	== "-ps") { mode = pack;   opts = csmall;}
+			else if (cmdline[0] == "-l")  { mode = unpack; opts = list; }
+			else if (cmdline[0] == "-t")  { mode = unpack; opts = test; }
 			else ExitError(1, Format("Unknown option: %s", cmdline[0]));
 			
 			iSrc=1;
@@ -98,7 +106,7 @@ CONSOLE_APP_MAIN
 	if (	(mode==unset) && ( (cmdline.GetCount() < 1) || (cmdline.GetCount() > 2) )
 		||	(mode!=unset) && ( (cmdline.GetCount() < 2) || (cmdline.GetCount() > 3) ) )
 	{
-		ExitError(1, "Error: invalid number of parameters -- use /? or -h for help");
+		ExitError(1, "invalid number of parameters -- use /? or -h for help");
 	}
 		
 	source = NormalizePath(cmdline.Get(iSrc, ""));
@@ -120,7 +128,7 @@ CONSOLE_APP_MAIN
 			mode = unpack;
 		}
 		else {
-			ExitError(1, Format("Error: Don't know how to handle \"%s\"", source));
+			ExitError(1, Format("Don't know how to handle \"%s\"", source));
 		}
 	}
 	// (packing) no destination given -- set to current directory
@@ -135,7 +143,7 @@ CONSOLE_APP_MAIN
 			}
 		}
 		else {
-			if (mode == unpack) ExitError(1, Format("Error: Destination directory does not exist (%s)", destination));
+			if (mode == unpack) ExitError(1, Format("Destination directory does not exist (%s)", destination));
 		}
 	}
 	// (packing) no filename given -- construct from project filename

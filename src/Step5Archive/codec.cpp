@@ -440,7 +440,7 @@ void delete_node(int16 i)
 /* Find longest string matching lookahead buffer string */
 int16 match(int16 n, int16 depth)
 {
-	int16 dist, best, var_8, index, i, len, count, j, var_14, var_16;
+	int16 dist, best, index, i, len, count, j;
 	
 	best = 0;
 	count = 0;

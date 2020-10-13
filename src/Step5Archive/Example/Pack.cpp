@@ -41,13 +41,6 @@ void Pack(String source, String destination, ArchOpts opts)
 			case 9: fn = px_ini.Get("STLBatchSettings", "STLSourceFile");  break; // A0.SEQ, A1.SEQ
 			default: NEVER(); fn = ""; break;
 		}
-//		if (!FileExists(fn)) {
-//			if (yes != AskConfirmation(Format("* \"%s\" : File not found. Continue?", fn))) {
-//				Cout() << "* Aborted\n";
-//				return;
-//			}
-//		}
-//		else
 		if (fn != "") {
 			switch (i) {
 				case 1:
@@ -72,9 +65,42 @@ void Pack(String source, String destination, ArchOpts opts)
 			}
 		}
 	}
+
+	/* TODO: handle existing file */
 	
+	FileOut archive_stream(destination);
+	WriteStep5Archive archive(archive_stream);
+	if (archive.IsError()) {
+		ExitError(40, Format("Can't create or open archive: %s\n", destination));
+	}
+
+	FindFile ff;
 	for(i=0; i<filenames.GetCount(); i++) {
-		Cout() << i << " " << filenames[i] << "\n";
+		if (ff.Search(filenames[i])) {
+			Cout() << " " << filenames[i] << " ";
+
+			Time tm = ff.GetLastChangeTime();
+			bool compress = (opts == csmall) || (ff.GetLength() >= 1024);
+			word attr = 0;
+			if (ff.IsReadOnly()) attr |= FILE_ATTRIBUTE::READONLY;
+			if (ff.IsHidden()) attr |= FILE_ATTRIBUTE::HIDDEN;
+			if (ff.IsDirectory()) attr |= FILE_ATTRIBUTE::DIRECTORY;
+#ifdef PLATFORM_WIN32
+			if (ff.IsSystem()) attr |= FILE_ATTRIBUTE::SYSTEM;
+			if (ff.IsArchive()) attr |= FILE_ATTRIBUTE::ARCHIVE;
+#endif
+
+			FileIn in(filenames[i]);
+			if (in.IsError()) ExitError(40, Format("Opening file stream (%s)", in.GetErrorText()));
+			archive.WriteFile(in, filenames[i], tm, attr, compress);
+			
+			if (in.IsError()) ExitError(40, Format("Input stream (%s)", in.GetErrorText()));
+			if (archive.IsError()) ExitError(40, "Packing file");
+			
+			
+			Cout() << Format("%s %3d%%", compress?"compressed":"stored", (((double)archive.GetCLength() / (double)in.GetSize()) * 100.0) );
+			Cout() << " Ok.\n";
+		}
 	}
 }
 
