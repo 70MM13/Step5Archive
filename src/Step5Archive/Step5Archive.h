@@ -12,21 +12,21 @@ int DecodeStream (Upp::Stream &in, Upp::Stream &out, int size_in=INT_MAX, int si
 
 namespace Upp {
 
-enum FILE_ATTRIBUTE {
-	READONLY            = 0x00000001,
-	HIDDEN              = 0x00000002,
-	SYSTEM              = 0x00000004,
-	DIRECTORY           = 0x00000010,
-	ARCHIVE             = 0x00000020,
-	DEVICE              = 0x00000040,
-	NORMAL              = 0x00000080,
-	TEMPORARY           = 0x00000100,
-	SPARSE_FILE         = 0x00000200,
-	REPARSE_POINT       = 0x00000400,
-	COMPRESSED          = 0x00000800,
-	OFFLINE             = 0x00001000,
-	NOT_CONTENT_INDEXED = 0x00002000,
-	ENCRYPTED           = 0x00004000
+enum file_attribute {
+	readonly            = 0x00000001,
+	hidden              = 0x00000002,
+	system              = 0x00000004,
+	directory           = 0x00000010,
+	archive             = 0x00000020,
+	device              = 0x00000040,
+	normal              = 0x00000080,
+	temporary           = 0x00000100,
+	sparse_file         = 0x00000200,
+	reparse_point       = 0x00000400,
+	compressed          = 0x00000800,
+	offline             = 0x00001000,
+	not_content_indexed = 0x00002000,
+	encrypted           = 0x00004000
 };
 
 
@@ -38,7 +38,12 @@ protected:
 	static const int sizeof_header = 54;
 	static const int sizeof_filerecord = 287;
 	static const int sizeof_path = 260;
-
+public:
+	static const int path_max = sizeof_path - 1;
+	static const int filecount_max = 40;
+	static const int minsize_compression = 1024; // Originally smaller files are stored. But why? those small files compress fine...
+	
+protected:
 	struct Header {
 		char id[6] = "STEP5"; //0-terminated
 		// 1 bytes '\0'
@@ -80,7 +85,7 @@ public:
 
 	int    GetCount() const        { return files.GetCount(); }
 	String GetPath(int i) const    { return files[i].path; }
-	bool   IsFolder(int i) const   { return (files[i].attr & FILE_ATTRIBUTE::DIRECTORY) > 0 ; }
+	bool   IsFolder(int i) const   { return (files[i].attr & file_attribute::directory) > 0 ; }
 	bool   IsFile(int i) const     { return !IsFolder(i); }
 	word   GetAttr(int i) const    { return files[i].attr; }
 	int    GetCLength(int i) const { return files[i].csize; }

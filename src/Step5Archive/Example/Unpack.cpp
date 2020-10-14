@@ -2,16 +2,17 @@
 
 String DosAttributeCharacters(word attr) {
 	String s;
-	s << (((attr & FILE_ATTRIBUTE::ARCHIVE)>0)	? "A" : ".");
-//	s << (((attr & FILE_ATTRIBUTE::DIRECTORY)>0)? "D" : ".");
-	s << (((attr & FILE_ATTRIBUTE::SYSTEM)>0)	? "S" : ".");
-	s << (((attr & FILE_ATTRIBUTE::HIDDEN)>0)	? "H" : ".");
-	s << (((attr & FILE_ATTRIBUTE::READONLY)>0) ? "R" : ".");
+	s << (((attr & file_attribute::archive)>0)	? "A" : ".");
+//	s << (((attr & file_attribute::directory)>0)? "D" : ".");
+	s << (((attr & file_attribute::system)>0)	? "S" : ".");
+	s << (((attr & file_attribute::hidden)>0)	? "H" : ".");
+	s << (((attr & file_attribute::readonly)>0) ? "R" : ".");
 	return s;
 }
 
 void Unpack(String source, String destination, ArchOpts opts)
 {
+	Confirmation confirm;
 	FileIn archive_stream(source);
 	Step5Archive archive(archive_stream);
 	
@@ -63,27 +64,42 @@ void Unpack(String source, String destination, ArchOpts opts)
 		}
 		Cout() << fn << " ";
 		if (FileExists(fn)) {
-			int a = AskConfirmation("* File already exists - overwrite?");
-			if (a < 0) ExitError(20, "user abort");
-			if (a != 1) continue;
+			confirm = AskConfirmation("* File already exists -- overwrite?");
+			if (confirm < 0) ExitError(255, "user abort");
+			if (confirm != 1) continue;
 		}
 		
 		if (opts == test) {
 			String outs = archive.ReadFile();
 		}
 		else {
+			String basedir = GetFileDirectory(fn);
+			if (!FileExists(basedir)) {
+				switch (AskConfirmation(Format("* Directory %s does not exist -- create?", basedir)))
+				{
+					case no : continue;
+					case yes :
+						if (!RealizeDirectory(fn)) ExitError(20, "Cannot create directory");
+						break;
+					default : ExitError (255, "user abort");
+				}
+			}
+			
 			FileOut out(fn);
-			if (out.IsError()) ExitError(20, "Creating outstream");
+			if (out.IsError()) ExitError(20, "Creating output file");
 			archive.ReadFile(out);
 		}
 
 		if (archive.IsError()) {
-			ExitError(20, "Writing outstream");
+			ExitError(20, "Extracting file");
+			// remove?
 		}
-		
-		/* TODO: write time and attributes */
-		else Cout() <<" Ok. \n";
-		
+
+		FileSetTime(fn, archive.GetTime());
+	
+		/* TODO: write attributes ? */
+
+		Cout() <<" Ok. \n";
 	}
 
 }

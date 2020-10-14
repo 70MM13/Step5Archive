@@ -66,9 +66,16 @@ void Pack(String source, String destination, ArchOpts opts)
 		}
 	}
 
-	/* TODO: handle existing file */
+	if (FileExists(destination)) {
+		switch(AskConfirmation(Format("%s already exists -- overwrite?", destination))) {
+			case yes : break;
+			default: ExitError(255, "user abort");
+		}
+	}
 	
+	//FileAppend archive_stream(destination);
 	FileOut archive_stream(destination);
+	
 	WriteStep5Archive archive(archive_stream);
 	if (archive.IsError()) {
 		ExitError(40, Format("Can't create or open archive: %s\n", destination));
@@ -79,15 +86,15 @@ void Pack(String source, String destination, ArchOpts opts)
 		if (ff.Search(filenames[i])) {
 			Cout() << " " << filenames[i] << " ";
 
-			Time tm = ff.GetLastChangeTime();
-			bool compress = (opts == csmall) || (ff.GetLength() >= 1024);
+			Time tm = ff.GetLastWriteTime();
+			bool compress = (opts == csmall) || (ff.GetLength() >= Step5Archive::minsize_compression);
 			word attr = 0;
-			if (ff.IsReadOnly()) attr |= FILE_ATTRIBUTE::READONLY;
-			if (ff.IsHidden()) attr |= FILE_ATTRIBUTE::HIDDEN;
-			if (ff.IsDirectory()) attr |= FILE_ATTRIBUTE::DIRECTORY;
+			if (ff.IsReadOnly()) attr |= file_attribute::readonly;
+			if (ff.IsHidden()) attr |= file_attribute::hidden;
+			if (ff.IsDirectory()) attr |= file_attribute::directory;
 #ifdef PLATFORM_WIN32
-			if (ff.IsSystem()) attr |= FILE_ATTRIBUTE::SYSTEM;
-			if (ff.IsArchive()) attr |= FILE_ATTRIBUTE::ARCHIVE;
+			if (ff.IsSystem()) attr |= file_attribute::system;
+			if (ff.IsArchive()) attr |= file_attribute::archive;
 #endif
 
 			FileIn in(filenames[i]);

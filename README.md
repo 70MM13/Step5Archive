@@ -43,3 +43,6 @@ A standard archive has the full pathname stored and STEP 5 extracts to these ful
 | Start offset in data block | 4 bytes   |                          |
 |                            | 287 bytes |                          |
 
+
+###Notice
+*SIMATIC* and *STEP 5* are registered trademarks of Siemens AG

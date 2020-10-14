@@ -41,10 +41,10 @@ void Step5Archive::ReadDir()
 		LLOG("Error: Header: ID not found");
 		return;
 	}
-	if ( (header.nfiles < 0) || (header.nfiles > 40) ) {
-		LLOG(Format("Error: Header: number of files (%i) out of range [0..40]", header.nfiles));
-		return;
-	}
+//	if ( (header.nfiles < 0) || (header.nfiles > 40) ) {
+//		LLOG(Format("Error: Header: number of files (%i) out of range [0..40]", header.nfiles));
+//		return;
+//	}
 	if (header.asize != archive->GetSize()) {
 		LLOG(Format("Error: Header: size (%i) does not match actual file size (%i)", (int)header.asize, archive->GetSize()));
 		return;
